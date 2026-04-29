@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -11,6 +12,9 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
+OSS_CAD_ROOT = Path(r"D:\oss-cad-suite\oss-cad-suite")
+OSS_CAD_BIN = OSS_CAD_ROOT / "bin"
+OSS_CAD_LIB = OSS_CAD_ROOT / "lib"
 TOP = "plcomp_tb"
 OUT = ROOT / "plcpu_sim.out"
 VCD = ROOT / "plcpu_sim.vcd"
@@ -34,13 +38,20 @@ SRCS = [
 def require_tool(name: str) -> str:
     path = shutil.which(name)
     if path is None:
+        candidate = OSS_CAD_BIN / f"{name}.exe"
+        if candidate.exists():
+            return str(candidate)
+    if path is None:
         raise RuntimeError(f"Cannot find {name}. Please install it or add it to PATH.")
     return path
 
 
 def run_command(cmd: list[str]) -> None:
     print("[CMD]", " ".join(cmd))
-    subprocess.run(cmd, cwd=ROOT, check=True)
+    env = dict(os.environ)
+    if OSS_CAD_BIN.exists():
+        env["PATH"] = f"{OSS_CAD_BIN};{OSS_CAD_LIB};" + env.get("PATH", "")
+    subprocess.run(cmd, cwd=ROOT, check=True, env=env)
 
 
 def build() -> None:

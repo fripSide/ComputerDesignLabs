@@ -42,6 +42,7 @@ module ctrl(Op, Funct7, Funct3, Zero,
   // i format 0010011
     wire itype_r  = ~Op[6]&~Op[5]&Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0]; //0010011
     wire i_addi  =  itype_r& ~Funct3[2]& ~Funct3[1]& ~Funct3[0]; // addi 000
+    wire i_andi  =  itype_r&  Funct3[2]&  Funct3[1]&  Funct3[0]; // andi 111
     	
   // s format 0100011
     wire stype  = ~Op[6]&Op[5]&~Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0]; //0100011
@@ -50,6 +51,7 @@ module ctrl(Op, Funct7, Funct3, Zero,
   // sb format 1100011
     wire sbtype  = Op[6]&Op[5]&~Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0];//1100011
     wire i_beq  = sbtype& ~Funct3[2]& ~Funct3[1]&~Funct3[0]; // beq 000
+    wire i_bne  = sbtype& ~Funct3[2]& ~Funct3[1]& Funct3[0]; // bne 001
 
   // j format
     wire i_jal  = Op[6]& Op[5]&~Op[4]& Op[3]& Op[2]& Op[1]& Op[0];  // jal 1101111
@@ -67,7 +69,7 @@ module ctrl(Op, Funct7, Funct3, Zero,
   // EXT_CTRL_UTYPE	      6'b000010
   // EXT_CTRL_JTYPE	      6'b000001
   assign EXTOp[5]    = 0;
-  assign EXTOp[4]    = i_addi | itype_l;
+  assign EXTOp[4]    = i_addi | i_andi | itype_l;
   assign EXTOp[3]    = stype; 
   assign EXTOp[2]    = sbtype; 
   assign EXTOp[1]    = LUI;
@@ -85,7 +87,7 @@ module ctrl(Op, Funct7, Funct3, Zero,
   // NPC_JALR	   3'b100
     assign NPCOp[2] = 0;
     assign NPCOp[1] = i_jal;
-    assign NPCOp[0] = sbtype & Zero;
+    assign NPCOp[0] = (i_beq & Zero) | (i_bne & ~Zero);
 
 // ALUOp_nop 5'b00000
 // ALUOp_lui 5'b00001
@@ -98,9 +100,9 @@ module ctrl(Op, Funct7, Funct3, Zero,
 // ALUOp_srl 5'b10000
 // ALUOp_sra 5'b10001
     assign ALUOp[4] = i_srl | i_sra;
-    assign ALUOp[3] = i_and | i_or | i_sll | i_xor;
-    assign ALUOp[2] = i_and | i_or | i_sub | i_beq | i_sll | i_xor;
-    assign ALUOp[1] = i_addi | i_add | i_and | i_sll | itype_l | stype ;
+    assign ALUOp[3] = i_and | i_andi | i_or | i_sll | i_xor;
+    assign ALUOp[2] = i_and | i_andi | i_or | i_sub | i_beq | i_bne | i_sll | i_xor;
+    assign ALUOp[1] = i_addi | i_add | i_and | i_andi | i_sll | itype_l | stype ;
 	  assign ALUOp[0] = i_addi | i_add | i_or | LUI | i_sll | i_sra | itype_l | stype ;
 
 endmodule
