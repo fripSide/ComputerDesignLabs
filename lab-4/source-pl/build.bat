@@ -12,6 +12,11 @@ rem   build.bat clean  Remove generated simulation files
 
 cd /d "%~dp0"
 
+set "OSS_CAD_ROOT=D:\oss-cad-suite\oss-cad-suite"
+if exist "%OSS_CAD_ROOT%\bin\iverilog.exe" (
+    set "PATH=%OSS_CAD_ROOT%\bin;%OSS_CAD_ROOT%\lib;%PATH%"
+)
+
 set "TOP=plcomp_tb"
 set "OUT=plcpu_sim.out"
 set "VCD=plcpu_sim.vcd"
