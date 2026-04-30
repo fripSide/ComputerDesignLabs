@@ -90,11 +90,8 @@ cd lab-3/source-sc
 
 ### Windows
 
-如果本机安装了 OSS CAD Suite，并且路径为：
+如果本机安装了`iverilog`：
 
-```text
-D:\oss-cad-suite\oss-cad-suite
-```
 
 直接运行：
 
@@ -120,23 +117,12 @@ D:\oss-cad-suite\oss-cad-suite
 .\build.bat clean
 ```
 
-如果本机安装路径不同，需要先修改：
-
-- `lab-3/source-sc/build.bat` 里的 `OSS_CAD_ROOT`
-- `lab-3/source-sc/build.py` 里的 `OSS_CAD_ROOT`
-
 ### Python
 
 ```powershell
 python .\build.py run
 python .\build.py wave
 python .\build.py clean
-```
-
-如果系统 `python` 不可用，也可以使用 OSS CAD Suite 自带 Python：
-
-```powershell
-D:\oss-cad-suite\oss-cad-suite\lib\python3.exe .\build.py run
 ```
 
 ### Linux / WSL
