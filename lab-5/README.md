@@ -188,6 +188,33 @@ D:\oss-cad-suite\oss-cad-suite
 - 或者把 Vivado 的 `bin` 目录加入 PATH。
 - 也可以直接打开 Vivado GUI，再用 Tcl Console 执行 `scripts/create_vivado_project.tcl`。
 
+可以先检查本机是否能找到 Vivado：
+
+```powershell
+Get-Command vivado
+```
+
+如果没有输出，继续检查常见安装位置：
+
+```powershell
+Get-ChildItem C:\Xilinx,D:\Xilinx -Filter vivado.bat -Recurse -ErrorAction SilentlyContinue
+```
+
+如果找到了类似下面的文件：
+
+```text
+C:\Xilinx\Vivado\2023.2\bin\vivado.bat
+```
+
+可以临时加入 PATH 后再运行：
+
+```powershell
+$env:PATH = "C:\Xilinx\Vivado\2023.2\bin;$env:PATH"
+.\build.bat vivado
+```
+
+如果本机根本没有 `vivado.bat`，就说明没有安装 Vivado，需要先安装 Vivado，或者换到实验室/机房已经安装 Vivado 的电脑上运行本实验。
+
 ### 3. 数码管显示方向看起来反了
 
 本实验按常见 Nexys4 DDR 七段管连接方式扫描：

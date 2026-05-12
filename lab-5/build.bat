@@ -51,11 +51,33 @@ exit /b %ERRORLEVEL%
 
 :vivado
 where vivado >nul 2>nul
-if errorlevel 1 (
-    echo [ERROR] Cannot find vivado. Run this target on a machine with Vivado installed.
-    exit /b 1
+if not errorlevel 1 (
+    vivado -mode batch -source scripts\create_vivado_project.tcl
+    exit /b %ERRORLEVEL%
 )
-vivado -mode batch -source scripts\create_vivado_project.tcl
+
+set "VIVADO_BAT="
+for %%V in (
+    "C:\Xilinx\Vivado\2024.2\bin\vivado.bat"
+    "C:\Xilinx\Vivado\2024.1\bin\vivado.bat"
+    "C:\Xilinx\Vivado\2023.2\bin\vivado.bat"
+    "C:\Xilinx\Vivado\2023.1\bin\vivado.bat"
+    "D:\Xilinx\Vivado\2024.2\bin\vivado.bat"
+    "D:\Xilinx\Vivado\2024.1\bin\vivado.bat"
+    "D:\Xilinx\Vivado\2023.2\bin\vivado.bat"
+    "D:\Xilinx\Vivado\2023.1\bin\vivado.bat"
+) do (
+    if exist %%~V set "VIVADO_BAT=%%~V"
+)
+
+if defined VIVADO_BAT (
+    call "%VIVADO_BAT%" -mode batch -source scripts\create_vivado_project.tcl
+    exit /b %ERRORLEVEL%
+)
+
+echo [ERROR] Cannot find Vivado.
+echo Install Vivado, or run this command from "Vivado Tcl Shell".
+echo If Vivado is installed in another path, add its bin directory to PATH first.
 exit /b %ERRORLEVEL%
 
 :clean
