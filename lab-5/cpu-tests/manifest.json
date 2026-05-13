@@ -1,0 +1,179 @@
+{
+  "targets": {
+    "sc": {
+      "name": "lab-3 single-cycle CPU",
+      "source_dir": "../../lab-3/source-sc",
+      "top": "sc_grade_tb",
+      "testbench": "tb/sc_grade_tb.v",
+      "sources": [
+        "alu.v",
+        "ctrl.v",
+        "dm.v",
+        "EXT.v",
+        "im.v",
+        "NPC.v",
+        "PC.v",
+        "sccomp.v",
+        "SCCPU.v",
+        "RF.v"
+      ],
+      "cycles": 80
+    },
+    "pl": {
+      "name": "lab-4-0507 pipeline CPU",
+      "source_dir": "../../lab-4-0507/source-pl",
+      "top": "pl_grade_tb",
+      "testbench": "tb/pl_grade_tb.v",
+      "sources": [
+        "alu.v",
+        "ctrl.v",
+        "dm.v",
+        "EXT.v",
+        "im.v",
+        "NPC.v",
+        "PC.v",
+        "plcomp.v",
+        "PLCPU.v",
+        "pl_reg.v",
+        "RF.v"
+      ],
+      "cycles": 140
+    }
+  },
+  "tests": [
+    {
+      "name": "sc_addi",
+      "target": "sc",
+      "program": "tests/sc/sc_addi.dat",
+      "checks": {
+        "regs": {
+          "x1": "0x00000005",
+          "x2": "0xfffffffb"
+        }
+      }
+    },
+    {
+      "name": "sc_rtype_add_sub",
+      "target": "sc",
+      "program": "tests/sc/sc_rtype_add_sub.dat",
+      "checks": {
+        "regs": {
+          "x3": "0x0000000d",
+          "x4": "0x00000005"
+        }
+      }
+    },
+    {
+      "name": "sc_logic",
+      "target": "sc",
+      "program": "tests/sc/sc_logic.dat",
+      "checks": {
+        "regs": {
+          "x3": "0x00000030",
+          "x4": "0x000000f3",
+          "x5": "0x000000c3"
+        }
+      }
+    },
+    {
+      "name": "sc_memory",
+      "target": "sc",
+      "program": "tests/sc/sc_memory.dat",
+      "checks": {
+        "regs": {
+          "x3": "0x00000123"
+        },
+        "mem": {
+          "3": "0x00000123"
+        }
+      }
+    },
+    {
+      "name": "sc_branch_beq",
+      "target": "sc",
+      "program": "tests/sc/sc_branch_beq.dat",
+      "checks": {
+        "regs": {
+          "x3": "0x00000000",
+          "x4": "0x00000007"
+        }
+      }
+    },
+    {
+      "name": "pl_addi",
+      "target": "pl",
+      "program": "tests/pl/pl_addi.dat",
+      "checks": {
+        "regs": {
+          "x1": "0x00000005",
+          "x2": "0x00000007",
+          "x3": "0x00000003"
+        }
+      }
+    },
+    {
+      "name": "pl_add",
+      "target": "pl",
+      "program": "tests/pl/pl_add.dat",
+      "checks": {
+        "regs": {
+          "x1": "0x00000005",
+          "x2": "0x00000007",
+          "x3": "0x0000000c"
+        }
+      }
+    },
+    {
+      "name": "pl_andi",
+      "target": "pl",
+      "program": "tests/pl/pl_andi.dat",
+      "checks": {
+        "regs": {
+          "x1": "0x00000005",
+          "x2": "0x00000001"
+        }
+      }
+    },
+    {
+      "name": "pl_jal_flush",
+      "target": "pl",
+      "program": "tests/pl/pl_jal_flush.dat",
+      "checks": {
+        "regs": {
+          "x1": "0x00000005",
+          "x2": "0x00000001",
+          "x3": "0x00000018",
+          "x4": "0x00000000",
+          "x5": "0x00000000",
+          "x6": "0x00000009"
+        }
+      }
+    },
+    {
+      "name": "pl_memory",
+      "target": "pl",
+      "program": "tests/pl/pl_memory.dat",
+      "checks": {
+        "regs": {
+          "x4": "0x00000111",
+          "x5": "0x00000222"
+        },
+        "mem": {
+          "4": "0x00000111",
+          "5": "0x00000222"
+        }
+      }
+    },
+    {
+      "name": "pl_lui",
+      "target": "pl",
+      "program": "tests/pl/pl_lui.dat",
+      "checks": {
+        "regs": {
+          "x5": "0x12345000",
+          "x6": "0xfffff000"
+        }
+      }
+    }
+  ]
+}

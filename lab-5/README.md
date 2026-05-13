@@ -260,3 +260,26 @@ $env:PATH = "C:\Xilinx\2025.2.1\Vivado\bin;$env:PATH"
 2. Vivado 综合、实现、生成 bitstream 成功截图。
 3. 上板后拨码开关和 LED 对应截图。
 4. 上板后数码管显示输入数字的截图。
+
+## 附加部分：CPU 小测试点自动评分
+
+老师要求的“单周期、流水线单个指令测试点”放在：
+
+```text
+lab-5/cpu-tests
+```
+
+运行方式：
+
+```powershell
+cd lab-5\cpu-tests
+.\grade.bat
+```
+
+脚本会自动调用 `iverilog` 和 `vvp`，分别编译 `lab-3/source-sc` 单周期 CPU 与 `lab-4-0507/source-pl` 流水线 CPU，然后逐个运行 `tests/sc`、`tests/pl` 下的小 `.dat` 文件，最后检查寄存器和数据内存。
+
+当前验证通过的总分：
+
+```text
+Score: 31/31
+```
