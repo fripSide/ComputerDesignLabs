@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Lab-2 流水线 CPU simulation helper."""
+"""Lab-4-0507 pipeline CPU simulation helper."""
 
 from __future__ import annotations
 
@@ -106,7 +106,7 @@ def clean() -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Lab-2 流水线 CPU simulation helper")
+    parser = argparse.ArgumentParser(description="Lab-4-0507 pipeline CPU simulation helper")
     parser.add_argument(
         "target",
         nargs="?",

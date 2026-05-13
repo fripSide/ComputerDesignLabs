@@ -41,13 +41,17 @@ module ctrl(Op, Funct7, Funct3, Zero,
   // i format 0010011
     wire itype_r  = ~Op[6]&~Op[5]&Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0]; //0010011
     wire i_addi  =  itype_r& ~Funct3[2]& ~Funct3[1]& ~Funct3[0]; // addi 000
+    wire i_andi  =  itype_r&  Funct3[2]&  Funct3[1]&  Funct3[0]; // andi 111
+
+  // j format 1101111
+    wire jal = Op[6]&Op[5]&~Op[4]&Op[3]&Op[2]&Op[1]&Op[0];
 
   // s format 0100011
     wire stype  = ~Op[6]&Op[5]&~Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0];//0100011
     wire i_sw   =  stype& ~Funct3[2]& Funct3[1]&~Funct3[0]; // sw 010
     
   // generate control signals
-  assign RegWrite   = rtype | itype_r | LUI | itype_l; // register write
+  assign RegWrite   = rtype | itype_r | LUI | itype_l | jal; // register write
   assign MemWrite   = stype;                // memory write
   assign MemRead    = itype_l;              // memory read
   assign ALUSrc     = itype_r | stype | LUI | itype_l;   // ALU B is from instruction immediate
@@ -60,16 +64,16 @@ module ctrl(Op, Funct7, Funct3, Zero,
   // EXT_CTRL_UTYPE	      6'b000010
   // EXT_CTRL_JTYPE	      6'b000001
   assign EXTOp[5]    = 0;
-  assign EXTOp[4]    = i_addi | itype_l;
+  assign EXTOp[4]    = itype_r | itype_l;
   assign EXTOp[3]    = stype; 
   assign EXTOp[2]    = 0; 
   assign EXTOp[1]    = LUI;
-  assign EXTOp[0]    = 0;         
+  assign EXTOp[0]    = jal;         
     
   // WDSel_FromALU 2'b00
   // WDSel_FromMEM 2'b01
   // WDSel_FromPC  2'b10 
-    assign WDSel[1] = 0;
+    assign WDSel[1] = jal;
     assign WDSel[0] = itype_l;
 
 // NPC_PLUS4      5'b00000
@@ -77,7 +81,7 @@ module ctrl(Op, Funct7, Funct3, Zero,
 // NPC_JUMP       5'b00010
 // NPC_JALR       5'b00100
     assign NPCOp[2] = 0;
-    assign NPCOp[1] = 0;
+    assign NPCOp[1] = jal;
     assign NPCOp[0] = 0;
 
 // ALUOp_nop 5'b00000
@@ -91,9 +95,9 @@ module ctrl(Op, Funct7, Funct3, Zero,
 // ALUOp_srl 5'b10000
 // ALUOp_sra 5'b10001
     assign ALUOp[4] = i_srl | i_sra;
-    assign ALUOp[3] = i_and | i_or | i_sll | i_xor;
-    assign ALUOp[2] = i_and | i_or | i_sub | i_sll | i_xor;
-    assign ALUOp[1] = i_addi | i_add | i_and | i_sll | itype_l | stype ;
+    assign ALUOp[3] = i_and | i_andi | i_or | i_sll | i_xor;
+    assign ALUOp[2] = i_and | i_andi | i_or | i_sub | i_sll | i_xor;
+    assign ALUOp[1] = i_addi | i_add | i_and | i_andi | i_sll | itype_l | stype ;
 	  assign ALUOp[0] = i_addi | i_add | i_or | LUI | i_sll | i_sra | itype_l | stype ;
 	
 endmodule

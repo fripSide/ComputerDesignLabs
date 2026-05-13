@@ -1,8 +1,8 @@
 @echo off
 setlocal
 
-rem Lab-2 CPU simulation script for Windows.
-rem source is the run directory. Run this script in plcpu_sim\source.
+rem Lab-4-0507 pipeline CPU simulation script for Windows.
+rem Run this script in lab-4-0507\source-pl.
 rem Usage:
 rem   build.bat        Build and run simulation
 rem   build.bat build  Build only

@@ -41,6 +41,8 @@ module PLCPU(
 	wire [11:0] iimm,simm,bimm;
 	wire [19:0] uimm,jimm;
 	wire [31:0] immout;
+    wire [2:0] EX_DMType;
+    wire [2:0] MEM_DMType;
 	
 	//EX wires
 	wire [4:0] EX_rd;
@@ -115,10 +117,10 @@ module PLCPU(
  // instantiation of pc unit
 	PC U_PC(.clk(~clk), .rst(reset), .NPC(NPC), .PC(PC_out) );
 	NPC U_NPC(.PC(PC_out), .NPCOp(EX_NPCOp),
-	          .IMM(EX_immout), .NPC(NPC));
+	          .JumpPC(EX_pc), .IMM(EX_immout), .NPC(NPC));
 	EXT U_EXT(
 		.iimm(iimm), .simm(simm), 
-		.uimm(uimm), .EXTOp(EXTOp), .immout(immout)
+		.uimm(uimm), .jimm(jimm), .EXTOp(EXTOp), .immout(immout)
 	);
 	RF U_RF(
 		.clk(clk), .rst(reset),
@@ -158,12 +160,17 @@ end
     assign A = alu_in1;
     assign B = (EX_ALUSrc) ? EX_immout : alu_in2;//whether from EXT
 
+    wire jump_flush;
+    assign jump_flush = (EX_NPCOp == `NPC_JUMP);
+
 //-----pipe registers--------------
 
     //IF_ID: [31:0] PC [31:0]instr
+    wire [63:0] IF_ID_raw_in;
     wire [63:0] IF_ID_in;
-    assign IF_ID_in[31:0] = PC_out;//original addr of the current ins in ID, not PC+4
-    assign IF_ID_in[63:32] = inst_in;
+    assign IF_ID_raw_in[31:0] = PC_out;//original addr of the current ins in ID, not PC+4
+    assign IF_ID_raw_in[63:32] = inst_in;
+    assign IF_ID_in = jump_flush ? 64'b0 : IF_ID_raw_in;
 
     wire [63:0] IF_ID_out;
     assign instr = IF_ID_out[63:32];
@@ -174,23 +181,25 @@ end
 
 
     //ID_EX
+    wire [193:0] ID_EX_raw_in;
     wire [193:0] ID_EX_in;
-    assign ID_EX_in[31:0] = IF_ID_out[31:0];//PC
-    assign ID_EX_in[36:32] = rd;
-    assign ID_EX_in[41:37] = rs1;
-    assign ID_EX_in[46:42] = rs2;
-    assign ID_EX_in[78:47] = immout;
-    assign ID_EX_in[110:79] = RD1;
-    assign ID_EX_in[142:111] = RD2;
-    assign ID_EX_in[143] = RegWrite;//RFWr
-    assign ID_EX_in[144] = ID_MemWrite;//DMWr
-    assign ID_EX_in[149:145] = ALUOp;
-    assign ID_EX_in[154:150] = NPCOp;
-    assign ID_EX_in[155] = ALUSrc;
-    assign ID_EX_in[158:156] = 3'b000;  //nop, reserved for mem access
-    assign ID_EX_in[160:159] = WDSel;
-    assign ID_EX_in[161] = ID_MemRead;
-    assign ID_EX_in[193:162] = IF_ID_out[63:32];
+    assign ID_EX_raw_in[31:0] = IF_ID_out[31:0];//PC
+    assign ID_EX_raw_in[36:32] = rd;
+    assign ID_EX_raw_in[41:37] = rs1;
+    assign ID_EX_raw_in[46:42] = rs2;
+    assign ID_EX_raw_in[78:47] = immout;
+    assign ID_EX_raw_in[110:79] = RD1;
+    assign ID_EX_raw_in[142:111] = RD2;
+    assign ID_EX_raw_in[143] = RegWrite;//RFWr
+    assign ID_EX_raw_in[144] = ID_MemWrite;//DMWr
+    assign ID_EX_raw_in[149:145] = ALUOp;
+    assign ID_EX_raw_in[154:150] = NPCOp;
+    assign ID_EX_raw_in[155] = ALUSrc;
+    assign ID_EX_raw_in[158:156] = 3'b000;  //nop, reserved for mem access
+    assign ID_EX_raw_in[160:159] = WDSel;
+    assign ID_EX_raw_in[161] = ID_MemRead;
+    assign ID_EX_raw_in[193:162] = IF_ID_out[63:32];
+    assign ID_EX_in = jump_flush ? 194'b0 : ID_EX_raw_in;
 
     wire [193:0] ID_EX_out;
     //wire [31:0] EX_inst;

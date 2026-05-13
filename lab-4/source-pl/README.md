@@ -1,58 +1,58 @@
-# Lab-2 流水线 CPU 工程运行说明
+# Lab-4-0507 source-pl 使用说明
 
-本目录是 Lab-2 的可运行目录，即 `plcpu_sim/source`。请在本目录下编译、运行仿真，避免 `rv32_pl_sim.dat` 的相对路径失效。
+本目录是 `lab-4-0507` 的独立运行目录，用来验证流水线 CPU 新增的两条指令：
 
-## 工程说明
+- `andi`
+- `jal`
 
-- 仿真顶层：`plcomp_tb.v`，顶层模块名为 `plcomp_tb`
-- CPU 顶层：`PLCPU.v`
-- 系统封装：`plcomp.v`
-- 指令初始化文件：`rv32_pl_sim.dat`
-- 仿真输出文件：`plcpu_sim.out`
-- 波形输出文件：`plcpu_sim.vcd`
+## 运行前先知道这几件事
 
-当前工程用于跑通已有流水线 CPU 仿真流程，不要求新增 CPU 指令或修改 CPU 功能逻辑。
+1. 仿真入口是 `plcomp_tb.v`，顶层模块名是 `plcomp_tb`。
+2. 测试程序文件是 `rv32_pl_sim.dat`。
+3. 本目录下的脚本默认都要在当前目录运行，否则可能找不到 `rv32_pl_sim.dat`。
 
-## 文件说明
+## 本次实验重点文件
 
-| 文件 | 作用 |
-|---|---|
-| `plcomp_tb.v` | 仿真 testbench，负责加载程序、产生时钟和复位、生成 VCD 波形并结束仿真 |
-| `plcomp.v` | 连接流水线 CPU、指令存储器和数据存储器 |
-| `PLCPU.v` | 流水线 CPU 顶层 |
-| `alu.v`、`ctrl.v`、`dm.v`、`EXT.v`、`im.v`、`NPC.v`、`PC.v`、`pl_reg.v`、`RF.v` | CPU 相关功能模块 |
-| `ctrl_encode_def.v` | 控制信号宏定义，由 Verilog 源文件通过 `` `include`` 引入 |
-| `rv32_pl_sim.dat` | 仿真程序数据文件，必须放在 source 运行目录中 |
-| `Makefile` | Linux / WSL 下的构建脚本 |
-| `build.bat` | Windows 下的构建脚本 |
-| `build.py` | Python 辅助构建脚本 |
+- `ctrl.v`
+  控制器，负责识别 `andi`、`jal` 并给出控制信号。
+- `EXT.v`
+  立即数扩展模块，`jal` 需要 J-type 立即数扩展。
+- `NPC.v`
+  下一个 PC 选择逻辑，`jal` 需要从这里生成跳转目标地址。
+- `PLCPU.v`
+  流水线顶层，负责把跳转冲刷逻辑接起来。
+- `plcomp_tb.v`
+  testbench，负责加载程序、导出波形、打印调试信息和自动验收。
 
-## 编译命令
+## 运行方法
 
-当前已验证通过的 iVerilog 编译命令为：
+### Windows
 
-```bash
-iverilog -o plcpu_sim.out -s plcomp_tb -I . alu.v ctrl.v dm.v EXT.v im.v NPC.v PC.v plcomp.v plcomp_tb.v PLCPU.v pl_reg.v RF.v
-```
-
-其中 `-I .` 用于保证当前目录下的 include 文件可被找到，`-s plcomp_tb` 指定仿真顶层。
-
-## Windows 运行方法
-
-在 PowerShell 或 CMD 中进入本 `source` 目录：
+编译并运行：
 
 ```powershell
-.\build.bat
+.\build.bat run
 ```
 
-默认执行编译和运行。也可以使用：
+只编译：
+
+```powershell
+.\build.bat build
+```
+
+打开波形：
 
 ```powershell
 .\build.bat wave
+```
+
+清理生成文件：
+
+```powershell
 .\build.bat clean
 ```
 
-如果使用 Python 脚本：
+如果你更想用 Python 脚本：
 
 ```powershell
 python .\build.py run
@@ -60,62 +60,137 @@ python .\build.py wave
 python .\build.py clean
 ```
 
-## Linux / WSL 运行方法
-
-在本 `source` 目录执行：
+### Linux / WSL
 
 ```bash
 make run
-```
-
-查看波形：
-
-```bash
 make wave
-```
-
-清理生成物：
-
-```bash
 make clean
 ```
 
-## 波形查看
+## 验收标准
 
-仿真成功后会生成 `plcpu_sim.vcd`。可以使用 GTKWave 打开：
+运行成功后，终端应看到：
 
-```bash
-gtkwave plcpu_sim.vcd
+```text
+[PASS] lab-4 source-pl checks passed.
 ```
 
-建议观察的关键信号包括：
+同时会生成：
+
+- `plcpu_sim.out`
+- `plcpu_sim.vcd`
+
+## 你应该观察到的正确结果
+
+### `andi`
+
+测试程序里先让：
+
+- `x1 = 5`
+
+然后执行：
+
+- `andi x2, x1, 3`
+
+因为：
+
+- `5 = 0101`
+- `3 = 0011`
+- `0101 & 0011 = 0001`
+
+所以应看到：
+
+- `x2 = 1`
+
+### `jal`
+
+测试程序里执行：
+
+- `jal x3, 12`
+
+应同时看到两件事：
+
+1. `x3` 写回 `PC + 4`
+2. PC 跳转到目标地址继续执行
+
+在当前测试程序里，验收值是：
+
+- `x3 = 0x18`
+
+### 跳转冲刷
+
+`jal` 之后顺序位置上的两条指令本来会写：
+
+- `x4`
+- `x5`
+
+但因为它们应该被跳过，所以正确结果是：
+
+- `x4 = 0`
+- `x5 = 0`
+
+如果你看到它们被写成了非零值，通常说明你只改了跳转地址，没有清空两级流水。
+
+## 波形里建议看什么
+
+建议在 GTKWave 里重点观察：
 
 - `clk`
 - `rstn`
-- `PC`
-- `instr`
-- `RFWr`
-- `A3`
-- `WD`
+- `plcomp.PC`
+- `plcomp.instr`
+- `plcomp.U_PLCPU.EX_pc`
+- `plcomp.U_PLCPU.EX_NPCOp`
+- `plcomp.U_PLCPU.NPC`
+- `plcomp.U_PLCPU.U_RF.RFWr`
+- `plcomp.U_PLCPU.U_RF.A3`
+- `plcomp.U_PLCPU.U_RF.WD`
 
-这些信号可用于检查时钟复位、PC 推进、取指过程和寄存器写回行为。
+观察重点：
 
-## 相对路径提醒
+1. `jal` 执行周期里，`NPC` 是否切到跳转目标。
+2. `x3` 是否写回 `PC+4`。
+3. `x4`、`x5` 是否没有被错误写回。
+4. 跳转目标后的 `x6` 是否成功写成 `9`。
 
-`plcomp_tb.v` 通过如下方式加载程序：
+## 常见错误排查
 
-```verilog
-$readmemh("rv32_pl_sim.dat", plcomp.U_imem.RAM);
+### 终端没有输出 `PASS`
+
+先检查：
+
+- `ctrl.v` 是否真的识别了 `andi` 和 `jal`
+- `EXT.v` 是否支持 J-type 扩展
+- `NPC.v` 是否支持跳转
+- `PLCPU.v` 是否做了 IF/ID 和 ID/EX 清空
+
+### `x3` 不是 `PC+4`
+
+这通常说明：
+
+- `WDSel` 没有给 `jal` 选到 `PC+4`
+- 或者写回阶段没有正确保留该条指令对应的 `PC`
+
+### `x4`、`x5` 被写坏了
+
+这通常说明：
+
+- 跳转后没有冲刷流水线
+- 或者只清空了一级，不够
+
+### 找不到 `rv32_pl_sim.dat`
+
+说明运行目录不对。请先进入本目录，再执行：
+
+```powershell
+cd lab-4-0507/source-pl
 ```
 
-因此运行目录必须处理好 `rv32_pl_sim.dat` 的相对路径。建议始终在 `source` 目录中执行 `.\build.bat`、`python .\build.py run` 或 `make run`。
+## 一句话总结
 
-## 可接受 warning
+本实验要真正做对，不是只让 `jal` 能跳，而是要同时满足：
 
-以下 warning 在当前实验中可以接受：
-
-- `$readmemh` 关于 IEEE 1364-2005 行为的 warning
-- `rv32_pl_sim.dat` 不足以填满 `[0:255]` 的 warning
-- 程序结束后继续取未初始化指令导致后段 `instr=xxxxxxxx`
-
-如果出现无法生成 `plcpu_sim.out`、无法运行 `vvp`、找不到 `rv32_pl_sim.dat` 或无法生成 `plcpu_sim.vcd`，需要先检查工具安装、运行目录和文件完整性。
+- 会跳
+- 会写回 `PC+4`
+- 会把错误进入流水线的顺序指令清掉
