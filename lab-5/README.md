@@ -148,6 +148,18 @@ lab-5/vivado/number_demo/number_demo.xpr
 - 顶层端口名是否是 `clk`、`rstn`、`sw_i`、`led_o`、`disp_seg_o`、`disp_an_o`。
 - 开发板型号是否匹配 Nexys4 DDR / Artix-7 `xc7a100tcsg324-1`。
 
+也可以用命令行直接验证能否生成 bitstream：
+
+```powershell
+.\build.bat bitstream
+```
+
+成功后会生成：
+
+```text
+lab-5/vivado/bitstream_check/board_number_demo.bit
+```
+
 ## 第四部分：上板后怎么验证
 
 烧录完成后，直接拨动开发板上的 16 个开关。
@@ -206,10 +218,16 @@ Get-ChildItem C:\Xilinx,D:\Xilinx -Filter vivado.bat -Recurse -ErrorAction Silen
 C:\Xilinx\Vivado\2023.2\bin\vivado.bat
 ```
 
+新版安装器也可能安装到：
+
+```text
+C:\Xilinx\2025.2.1\Vivado\bin\vivado.bat
+```
+
 可以临时加入 PATH 后再运行：
 
 ```powershell
-$env:PATH = "C:\Xilinx\Vivado\2023.2\bin;$env:PATH"
+$env:PATH = "C:\Xilinx\2025.2.1\Vivado\bin;$env:PATH"
 .\build.bat vivado
 ```
 

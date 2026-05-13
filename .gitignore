@@ -3,4 +3,11 @@
 *.vcd
 *.wlf
 *.log
+*.jou
+*.backup.jou
+*.backup.log
+*.str
+.Xil/
+clockInfo.txt
+dfx_runtime.txt
 lab-5/vivado/
