@@ -15,3 +15,7 @@
 | 2026-04-23 | [Lab2](lab-2/README.md) | 读单周期CPU参考代码，运行代码查看波形 |
 | 2026-04-30 | [Lab3](lab-3/README.md) | 在单周期CPU上添加2条指令 |
 | 2026-05-07 | [Lab4](lab-4/README.md) | 在流水线CPU上添加2条指令 |
+| 2026-05-14 | [Lab5](lab-5/README.md) | 学习使用Nexys DDR开发板 |
+| 2026-05-21 | [Lab6](lab-6/README.md) | 学习使用Nexys DDR开发板 |
+| 待定（投票） | 额外增加一次线下课程 | 尝试在Nexys DDR开发板上跑通 |
+| 待定 | [Final](final/README.md) | 最终验收 |
