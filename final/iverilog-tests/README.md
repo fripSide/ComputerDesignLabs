@@ -6,6 +6,9 @@
 
 - `tb/sc_final_tb.v`：单周期 CPU 测试模板，默认实例化 `sccomp`。
 - `tb/pl_final_tb.v`：流水线 CPU 测试模板，默认实例化 `plcomp`。
+- `tests/sc/`：单周期 CPU 指令测试数据。
+- `tests/pl/`：流水线 CPU 指令测试数据。
+- `tests/expected_results.json`：每个测试数据对应的期望寄存器结果和覆盖指令。
 
 两个 testbench 都支持：
 
@@ -50,3 +53,39 @@ vvp pl_final.out +IMEM=tests\pl_jalr_flush.dat +CYCLES=160
 - `pl_load_use_stall.dat`
 
 每个 `.dat` 文件对应多个检查项，例如检查 3 个寄存器和 1 个内存值，则这个测试点总分为 4 分。
+
+## 已提供的测试数据
+
+单周期 CPU：
+
+```text
+tests/sc/sc_compare_slt.dat          slt
+tests/sc/sc_compare_sltu.dat         sltu
+tests/sc/sc_logic_immediate.dat      andi, ori, xori
+tests/sc/sc_shift_immediate.dat      slli, srli, srai
+tests/sc/sc_set_less_immediate.dat   slti, sltiu
+tests/sc/sc_branches.dat             bne, bge, bgeu, blt, bltu
+tests/sc/sc_jalr.dat                 jalr
+```
+
+流水线 CPU：
+
+```text
+tests/pl/pl_compare_slt.dat          slt
+tests/pl/pl_compare_sltu.dat         sltu
+tests/pl/pl_logic_immediate.dat      andi, ori, xori
+tests/pl/pl_shift_immediate.dat      slli, srli, srai
+tests/pl/pl_set_less_immediate.dat   slti, sltiu
+tests/pl/pl_branches.dat             bne, bge, bgeu, blt, bltu
+tests/pl/pl_beq.dat                  beq
+tests/pl/pl_jal.dat                  jal
+tests/pl/pl_jalr.dat                 jalr
+```
+
+这些文件覆盖了 `final/README.md` 中列出的全部要求指令。每个 `.dat` 内部包含多个检查点，期望结果见：
+
+```text
+tests/expected_results.json
+```
+
+注意：老师原文中的 `sltui` 按 RISC-V 标准写作 `sltiu`，测试数据和期望结果均使用 `sltiu`。
