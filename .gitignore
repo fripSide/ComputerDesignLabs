@@ -12,3 +12,7 @@ clockInfo.txt
 dfx_runtime.txt
 lab-5/vivado/
 lab-5/cpu-tests/build/
+diff-report/
+student-sc/
+student-pl/
+_diff_test/
