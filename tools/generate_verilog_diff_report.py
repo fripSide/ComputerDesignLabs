@@ -259,7 +259,7 @@ def render_rows(rows: list[DiffLine], context: int) -> str:
         if row.kind == "context" and not row_visible(rows, index, context):
             if not skipped:
                 parts.append(
-                    '<tr class="skip"><td></td><td></td>'
+                    '<tr class="skip"><td class="ln"></td><td class="ln"></td>'
                     '<td class="code">...</td></tr>'
                 )
                 skipped = True
@@ -299,32 +299,30 @@ def render_html(
             f"<li>{html.escape(warning)}</li>" for warning in warnings
         ) + "</ul></section>"
 
-    summary = "\n".join(
-        f'<a href="#file-{index}"><span class="status {item.status}">'
-        f"{html.escape(item.status)}</span>{html.escape(item.comparison)}/"
-        f"{html.escape(item.rel_path)}"
-        f'<span class="numbers">+{item.added} -{item.deleted}</span></a>'
-        for index, item in enumerate(diffs)
-    )
-    file_sections = "\n".join(
+    file_items = "\n".join(
         f"""
-        <section class="file" id="file-{index}">
-          <header>
-            <div>
+        <details class="file" id="file-{index}">
+          <summary>
+            <span class="file-title">
               <span class="status {item.status}">{html.escape(item.status)}</span>
-              <strong>{html.escape(item.comparison)}/{html.escape(item.rel_path)}</strong>
-            </div>
-            <div class="numbers">+{item.added} -{item.deleted}</div>
-          </header>
+              <strong class="path">{html.escape(item.comparison)}/{html.escape(item.rel_path)}</strong>
+            </span>
+            <span class="numbers">+{item.added} -{item.deleted}</span>
+          </summary>
           <table>
+            <colgroup>
+              <col class="line-col">
+              <col class="line-col">
+              <col>
+            </colgroup>
             <tbody>
               {render_rows(item.rows, context)}
             </tbody>
           </table>
-        </section>
+        </details>
         """
         for index, item in enumerate(diffs)
-    )
+    ) or '<div class="empty">No matching changes found.</div>'
 
     return f"""<!doctype html>
 <html lang="zh-CN">
@@ -356,7 +354,7 @@ def render_html(
     h1 {{ margin: 0 0 8px; font-size: 26px; }}
     h2 {{ margin: 0 0 12px; font-size: 18px; }}
     .meta, .numbers {{ color: var(--muted); }}
-    .overview, .warnings, .summary, .file {{
+    .overview, .warnings, .files {{
       background: #fff;
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -377,20 +375,51 @@ def render_html(
       background: #fff;
     }}
     .warnings {{ padding: 14px 18px; border-color: #d29922; background: #fff8c5; }}
-    .summary {{ overflow: hidden; }}
-    .summary a {{
+    .files {{ overflow: hidden; }}
+    .empty {{
+      padding: 12px 14px;
+      color: var(--muted);
+    }}
+    .file {{
+      border-top: 1px solid var(--border);
+      overflow: hidden;
+    }}
+    .file:first-child {{ border-top: 0; }}
+    .file summary {{
       display: flex;
       gap: 10px;
       align-items: center;
       padding: 10px 14px;
-      border-top: 1px solid var(--border);
       color: var(--text);
-      text-decoration: none;
+      cursor: pointer;
       font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      list-style: none;
     }}
-    .summary a:first-child {{ border-top: 0; }}
-    .summary a:hover {{ background: #f6f8fa; }}
-    .summary .numbers {{ margin-left: auto; }}
+    .file summary::-webkit-details-marker {{ display: none; }}
+    .file summary::before {{
+      content: "+";
+      flex: 0 0 16px;
+      color: var(--muted);
+      font-weight: 600;
+      text-align: center;
+    }}
+    .file[open] summary {{
+      border-bottom: 1px solid var(--border);
+      background: #f6f8fa;
+    }}
+    .file[open] summary::before {{ content: "-"; }}
+    .file summary:hover {{ background: #f6f8fa; }}
+    .file-title {{
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+    }}
+    .path {{ overflow-wrap: anywhere; }}
+    .file summary .numbers {{
+      margin-left: auto;
+      white-space: nowrap;
+    }}
     .status {{
       display: inline-block;
       min-width: 68px;
@@ -404,23 +433,13 @@ def render_html(
     .status.added {{ background: #1a7f37; }}
     .status.deleted {{ background: #cf222e; }}
     .status.unchanged {{ background: #57606a; }}
-    .file {{ overflow: hidden; }}
-    .file header {{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-      background: #fff;
-      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
-    }}
     table {{
       width: 100%;
       border-collapse: collapse;
       background: var(--code-bg);
       table-layout: fixed;
     }}
+    col.line-col {{ width: 56px; }}
     td {{
       padding: 0;
       vertical-align: top;
@@ -447,8 +466,10 @@ def render_html(
     tr.skip td {{ background: #f6f8fa; color: var(--muted); }}
     @media (max-width: 760px) {{
       main {{ padding: 14px; }}
-      .file header, .summary a {{ align-items: flex-start; flex-direction: column; }}
-      .summary .numbers {{ margin-left: 0; }}
+      .file summary {{ align-items: flex-start; }}
+      .file-title {{ align-items: flex-start; flex-direction: column; }}
+      .file summary .numbers {{ margin-left: 26px; }}
+      col.line-col {{ width: 42px; }}
       .ln {{ width: 42px; padding: 0 6px; }}
     }}
   </style>
@@ -467,10 +488,9 @@ def render_html(
       </div>
     </section>
     {warning_html}
-    <nav class="summary">
-      {summary or '<a>No matching changes found.</a>'}
-    </nav>
-    {file_sections}
+    <section class="files">
+      {file_items}
+    </section>
   </main>
 </body>
 </html>

@@ -17,3 +17,6 @@ student-sc/
 student-pl/
 _diff_test/
 final/my
+final/demo/
+__pycache__/
+tools/__pycache__/
